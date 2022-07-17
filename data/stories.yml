@@ -1,30 +1,65 @@
 version: "2.0"
 
 stories:
-
-- story: happy path
+- story: chao_hoi
   steps:
   - intent: greet
   - action: utter_greet
-  - intent: mood_great
-  - action: utter_happy
-
-- story: sad path 1
+  - intent: give_name
+  - action: utter_greet_with_name
+  - intent: ask_name
+  - action: utter_ask_name
+  - intent: bye
+  - action: utter_bye
+- story: chao_hoi_dua_ten_sach
   steps:
   - intent: greet
   - action: utter_greet
-  - intent: mood_unhappy
-  - action: utter_cheer_up
-  - action: utter_did_that_help
-  - intent: affirm
-  - action: utter_happy
-
-- story: sad path 2
+  - intent: give_name
+  - action: utter_greet_with_name
+  - intent: give_book_name
+  - action: action_ask_book
+  - intent: ask_name
+  - action: utter_ask_name
+  - intent: bye
+  - action: utter_bye
+- story: dua_ten
+  steps:
+  - intent: give_name
+  - action: utter_greet_with_name
+- story: chao_ten_hoichucnang_chao
   steps:
   - intent: greet
   - action: utter_greet
-  - intent: mood_unhappy
-  - action: utter_cheer_up
-  - action: utter_did_that_help
-  - intent: deny
-  - action: utter_goodbye
+  - intent: ask_name
+  - action: utter_ask_name
+  - intent: ask_func_list
+  - action: utter_func_list
+  - intent: bye
+  - action: utter_bye
+- story: chao_hoichucnang_chao
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: ask_func_list
+  - action: utter_func_list
+  - intent: bye
+  - action: utter_bye
+- story: chao_hoiten_chao
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: ask_name
+  - action: utter_ask_name
+  - intent: bye
+  - action: utter_bye
+- story: hoiten_hoichucnang
+  steps:
+  - intent: ask_name
+  - action: utter_ask_name
+  - intent: ask_func_list
+  - action: utter_func_list
+- story: camon
+  steps:
+  - intent: thank
+  - action: utter_thank

@@ -1,13 +1,16 @@
 version: "2.0"
-
 rules:
-
-- rule: Say goodbye anytime the user says goodbye
+- rule: Activate search book name form
   steps:
-  - intent: goodbye
-  - action: utter_goodbye
-
-- rule: Say 'I am a bot' anytime the user challenges
+  - intent: search
+  - action: book_name_form
+  - active_loop: book_name_form
+- rule: Submit search book name form
+  condition:
+  - active_loop: book_name_form
   steps:
-  - intent: bot_challenge
-  - action: utter_iamabot
+  - action: book_name_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: action_search
