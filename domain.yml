@@ -41,7 +41,7 @@ slots:
     initial_value: null
     auto_fill: true
     influence_conversation: false
-  save_category:
+  saved_category:
     type: rasa.shared.core.slots.TextSlot
     initial_value: null
     auto_fill: true
@@ -67,10 +67,14 @@ slots:
     auto_fill: true
     influence_conversation: true
   search_type_choice:
-    type: rasa.shared.core.slots.TextSlot
+    type: rasa.shared.core.slots.CategoricalSlot
     initial_value: null
     auto_fill: true
     influence_conversation: true
+    values:
+    - '1'
+    - '2'
+    - '3'
   cust_sex:
     type: rasa.shared.core.slots.TextSlot
     initial_value: null
@@ -135,6 +139,8 @@ actions:
 - action_handle_search_type_choice
 - action_search_author
 - action_search_book_by_author
+- action_search_category
+- action_search_book_by_category
 forms:
   book_name_form:
     required_slots:

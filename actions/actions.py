@@ -32,7 +32,7 @@ from unittest import result
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet
+from rasa_sdk.events import SlotSet, AllSlotsReset, FollowupAction
 import requests
 from dotenv import load_dotenv
 from pathlib import Path
@@ -43,9 +43,11 @@ load_dotenv(dotenv_path)
 main_url=os.getenv("MAIN_URL")
 search_path = os.getenv("SEARCH_PATH")
 search_by_author_path = os.getenv("SEARCH_BY_AUTHOR_PATH")
+search_by_category_path = os.getenv("SEARCH_BY_CATEGORY_PATH")
 os.environ['NO_PROXY'] = '127.0.0.1'
 SEARCH_URL = f'{main_url}{search_path}'
 SEARCH_BY_AUTHOR_URL = f'{main_url}{search_by_author_path}'
+SEARCH_BY_CATEGORY_URL = f'{main_url}{search_by_category_path}'
 
 
 class Service():
@@ -61,6 +63,7 @@ class Service():
             listItem.append(' - '.join(str(x) for x in attrValueList))
 
         return '\n'.join(listItem) 
+
 class ActionAskBook(Action):
     def name(self) -> Text:
         return "action_ask_book"
@@ -96,6 +99,7 @@ class ActionSearch(Action):
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        print("action", self.name())
         message = tracker.latest_message['text']
         # type = tracker.get_slot('search_type_choice')
         params = {'q': message, 'type': 1}
@@ -105,9 +109,9 @@ class ActionSearch(Action):
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
             dispatcher.utter_message('Đã có lỗi xảy ra')
-            return []
+            return [AllSlotsReset()]
         dispatcher.utter_message(response.content)
-        return [SlotSet("book_name", None)]
+        return [SlotSet("search_type_choice", None), SlotSet("book_name", None)]
 
 class ActionGetAuthor(Action):
     def name(self) -> Text:
@@ -116,7 +120,7 @@ class ActionGetAuthor(Action):
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:   
-          
+        print("action", self.name())
         message = tracker.latest_message['text']
 
         params = {'q': message,'type': 2}   
@@ -126,7 +130,7 @@ class ActionGetAuthor(Action):
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
             dispatcher.utter_message('Đã có lỗi xảy ra')
-            return []
+            return [AllSlotsReset()]
 
         content = json.loads(response.content)
         listItem = []
@@ -136,8 +140,9 @@ class ActionGetAuthor(Action):
             item['index'] = counter
             counter = counter + 1
         tracker.slots['saved_author'] = json.dumps(content)
+        print('\n'.join(listItem))
         dispatcher.utter_message('\n'.join(listItem))
-        return [SlotSet("book_author", None), SlotSet("saved_author", json.dumps(content))]
+        return [SlotSet("search_type_choice", None), SlotSet("book_author", None), SlotSet("saved_author", json.dumps(content))]
 
 class ActionGetBookByAuthor(Action):
     def name(self) -> Text:
@@ -146,7 +151,7 @@ class ActionGetBookByAuthor(Action):
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:   
-          
+        print("action", self.name())
         message = tracker.latest_message['text']
         saved_author = tracker.get_slot('saved_author')
         target_id = None
@@ -162,7 +167,7 @@ class ActionGetBookByAuthor(Action):
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
             dispatcher.utter_message('Đã có lỗi xảy ra')
-            return []
+            return [AllSlotsReset()]
 
         counter = 1
         content = json.loads(response.content)
@@ -173,4 +178,71 @@ class ActionGetBookByAuthor(Action):
         result = Service.productObjectToString(content)
         dispatcher.utter_message(result)
         print(result)
-        return [SlotSet("book_author", None), SlotSet("saved_author", None)]
+        return [AllSlotsReset(), SlotSet("saved_product", response.content)]
+
+class ActionGetCategory(Action):
+    def name(self) -> Text:
+        return "action_search_category"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:   
+        print("action", self.name())
+        message = tracker.latest_message['text']
+
+        params = {'q': message,'type': 3}   
+        response = requests.get(url=f'{SEARCH_URL}', params=params)
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Whoops it wasn't a 200
+            dispatcher.utter_message('Đã có lỗi xảy ra')
+            return [AllSlotsReset()]
+
+        content = json.loads(response.content)
+        listItem = []
+        counter = 1
+        for item in content:
+            listItem.append(f"{counter} - {item['name']}")
+            item['index'] = counter
+            counter = counter + 1
+        tracker.slots['saved_category'] = json.dumps(content)
+        print('\n'.join(listItem))
+        dispatcher.utter_message('\n'.join(listItem))
+        return [SlotSet("search_type_choice", None), SlotSet("book_category", None), SlotSet("saved_category", json.dumps(content))]
+
+class ActionGetBookByCategory(Action):
+    def name(self) -> Text:
+        return "action_search_book_by_category"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:   
+        print("action", self.name())
+        message = tracker.latest_message['text']
+        saved_category = tracker.get_slot('saved_category')
+        target_id = None
+        content = json.loads(saved_category)
+        for item in content:
+            if item['index'] == int(message):
+                target_id = item['id']
+
+        params = {'categoryId': target_id} 
+        response = requests.get(url=f'{SEARCH_BY_CATEGORY_URL}', params=params)
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Whoops it wasn't a 200
+            dispatcher.utter_message('Đã có lỗi xảy ra')
+            return [AllSlotsReset()]
+
+        counter = 1
+        content = json.loads(response.content)
+
+        for item in content:
+            item['index'] = counter
+            counter = counter + 1
+        result = Service.productObjectToString(content)
+        dispatcher.utter_message(result)
+        print(result)
+        return [AllSlotsReset(), SlotSet("saved_product", response.content)]
