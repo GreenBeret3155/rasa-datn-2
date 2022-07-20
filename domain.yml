@@ -31,6 +31,46 @@ slots:
     initial_value: null
     auto_fill: true
     influence_conversation: true
+  saved_book:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
+  saved_author:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
+  save_category:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
+  choice_author:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
+  choice_category:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
+  book_author:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  book_category:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  search_type_choice:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
   cust_sex:
     type: rasa.shared.core.slots.TextSlot
     initial_value: null
@@ -69,8 +109,18 @@ responses:
   - text: 'Thưa quý khách, hiện tại tôi chưa hiểu được yêu cầu của Quý khách. '
   utter_greet_with_name:
   - text: Kính chào {cust_sex} {cust_name}. ABC Shop có thể giúp gì được {cust_sex} {cust_name} ạ?
+  utter_ask_search_type_choice:
+  - text: Bạn hãy chọn loại tìm kiếm
   utter_ask_book_name:
   - text: Hãy điền tên sách bạn muốn tìm
+  utter_ask_book_author:
+  - text: Hãy chọn tác giả bạn muốn tìm sách
+  utter_ask_book_category:
+  - text: Hãy chọn category bạn muốn tìm sách
+  utter_ask_choice_author:
+  - text: Nhập vào mã tác giả bạn muốn tìm sách
+  utter_ask_choice_category:
+  - text: Nhập vào mã thể loại sách bạn muốn tìm
 actions:
 - utter_greet
 - utter_bye
@@ -82,9 +132,32 @@ actions:
 - utter_greet_with_name
 - action_ask_book
 - action_search
+- action_handle_search_type_choice
+- action_search_author
+- action_search_book_by_author
 forms:
   book_name_form:
     required_slots:
       book_name:
+      - type: from_text
+  search_choice_form:
+    required_slots:
+      search_type_choice:
+      - type: from_text
+  book_author_form:
+    required_slots:
+      book_author:
+      - type: from_text
+  choose_author_form:
+    required_slots:
+      choice_author:
+      - type: from_text
+  book_category_form:
+    required_slots:
+      book_category:
+      - type: from_text
+  choose_category_form:
+    required_slots:
+      choice_category:
       - type: from_text
 e2e_actions: []

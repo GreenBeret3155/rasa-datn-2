@@ -1,5 +1,4 @@
 version: "2.0"
-
 stories:
 - story: chao_hoi
   steps:
@@ -63,3 +62,37 @@ stories:
   steps:
   - intent: thank
   - action: utter_thank
+- story: tim_sach_theo_ten
+  steps:
+  - intent: search
+  - action: search_choice_form
+  - active_loop: search_choice_form
+  - active_loop: null
+  - slot_was_set:
+    - search_type_choice: '1'
+  - action: book_name_form
+  - active_loop: book_name_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: action_search
+- story: tim_sach_theo_tacgia
+  steps:
+  - intent: search
+  - action: search_choice_form
+  - active_loop: search_choice_form
+  - slot_was_set:
+    - search_type_choice: '2'
+  - active_loop: null
+  - action: book_author_form
+  - active_loop: book_author_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: action_search_author
+  - action: choose_author_form
+  - active_loop: choose_author_form
+  - slot_was_set:
+    - requested_slot: null
+  - active_loop: null
+  - action: action_search_book_by_author

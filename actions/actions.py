@@ -28,6 +28,7 @@
 import json
 from os.path import join, dirname
 from typing import Any, Text, Dict, List
+from unittest import result
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
@@ -41,8 +42,25 @@ load_dotenv(dotenv_path)
 '''os.getenv() used to read varibles from .env file'''
 main_url=os.getenv("MAIN_URL")
 search_path = os.getenv("SEARCH_PATH")
+search_by_author_path = os.getenv("SEARCH_BY_AUTHOR_PATH")
+os.environ['NO_PROXY'] = '127.0.0.1'
+SEARCH_URL = f'{main_url}{search_path}'
+SEARCH_BY_AUTHOR_URL = f'{main_url}{search_by_author_path}'
 
 
+class Service():
+    def productObjectToString(p : List[Dict[Text, Any]]) -> Text:
+        listAttr = ['index', 'name', 'short_description']
+        listItem = []
+        for item in p:
+            attrValueList = []
+            for attr in listAttr:
+                print(attr)
+                print(item[attr])
+                attrValueList.append(item[attr])
+            listItem.append(' - '.join(str(x) for x in attrValueList))
+
+        return '\n'.join(listItem) 
 class ActionAskBook(Action):
     def name(self) -> Text:
         return "action_ask_book"
@@ -71,7 +89,7 @@ class ActionAskBook(Action):
         return []
 
 class ActionSearch(Action):
-    SEARCH_URL = f'{main_url}{search_path}'
+    
     def name(self) -> Text:
         return "action_search"
 
@@ -79,9 +97,80 @@ class ActionSearch(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         message = tracker.latest_message['text']
-        os.environ['NO_PROXY'] = '127.0.0.1'
-        response = requests.get(url=f'{self.SEARCH_URL}{message}')
-        print(response.url)
-        print(response.content)
+        # type = tracker.get_slot('search_type_choice')
+        params = {'q': message, 'type': 1}
+        response = requests.get(url=f'{SEARCH_URL}', params=params)
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Whoops it wasn't a 200
+            dispatcher.utter_message('Đã có lỗi xảy ra')
+            return []
         dispatcher.utter_message(response.content)
         return [SlotSet("book_name", None)]
+
+class ActionGetAuthor(Action):
+    def name(self) -> Text:
+        return "action_search_author"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:   
+          
+        message = tracker.latest_message['text']
+
+        params = {'q': message,'type': 2}   
+        response = requests.get(url=f'{SEARCH_URL}', params=params)
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Whoops it wasn't a 200
+            dispatcher.utter_message('Đã có lỗi xảy ra')
+            return []
+
+        content = json.loads(response.content)
+        listItem = []
+        counter = 1
+        for item in content:
+            listItem.append(f"{counter} - {item['name']}")
+            item['index'] = counter
+            counter = counter + 1
+        tracker.slots['saved_author'] = json.dumps(content)
+        dispatcher.utter_message('\n'.join(listItem))
+        return [SlotSet("book_author", None), SlotSet("saved_author", json.dumps(content))]
+
+class ActionGetBookByAuthor(Action):
+    def name(self) -> Text:
+        return "action_search_book_by_author"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:   
+          
+        message = tracker.latest_message['text']
+        saved_author = tracker.get_slot('saved_author')
+        target_id = None
+        content = json.loads(saved_author)
+        for item in content:
+            if item['index'] == int(message):
+                target_id = item['id']
+
+        params = {'authorId': target_id} 
+        response = requests.get(url=f'{SEARCH_BY_AUTHOR_URL}', params=params)
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Whoops it wasn't a 200
+            dispatcher.utter_message('Đã có lỗi xảy ra')
+            return []
+
+        counter = 1
+        content = json.loads(response.content)
+
+        for item in content:
+            item['index'] = counter
+            counter = counter + 1
+        result = Service.productObjectToString(content)
+        dispatcher.utter_message(result)
+        print(result)
+        return [SlotSet("book_author", None), SlotSet("saved_author", None)]
