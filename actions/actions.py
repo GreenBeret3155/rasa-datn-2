@@ -26,6 +26,7 @@
 #
 #         return []
 import json
+from operator import index
 from os.path import join, dirname
 from typing import Any, Text, Dict, List
 from unittest import result
@@ -48,6 +49,7 @@ os.environ['NO_PROXY'] = '127.0.0.1'
 SEARCH_URL = f'{main_url}{search_path}'
 SEARCH_BY_AUTHOR_URL = f'{main_url}{search_by_author_path}'
 SEARCH_BY_CATEGORY_URL = f'{main_url}{search_by_category_path}'
+BOT_PUSH_CART_URL = f'{main_url}/bot-push-cart'
 
 
 class Service():
@@ -110,8 +112,17 @@ class ActionSearch(Action):
             # Whoops it wasn't a 200
             dispatcher.utter_message('Đã có lỗi xảy ra')
             return [AllSlotsReset()]
-        dispatcher.utter_message(response.content)
-        return [SlotSet("search_type_choice", None), SlotSet("book_name", None)]
+
+        counter = 1
+        content = json.loads(response.content)
+
+        for item in content:
+            item['index'] = counter
+            counter = counter + 1
+        result = Service.productObjectToString(content)
+        dispatcher.utter_message(result)
+
+        return [AllSlotsReset(), SlotSet("saved_product", json.dumps(content))]
 
 class ActionGetAuthor(Action):
     def name(self) -> Text:
@@ -177,8 +188,8 @@ class ActionGetBookByAuthor(Action):
             counter = counter + 1
         result = Service.productObjectToString(content)
         dispatcher.utter_message(result)
-        print(result)
-        return [AllSlotsReset(), SlotSet("saved_product", response.content)]
+        print(content[0])
+        return [AllSlotsReset(), SlotSet("saved_product", json.dumps(content))]
 
 class ActionGetCategory(Action):
     def name(self) -> Text:
@@ -244,5 +255,51 @@ class ActionGetBookByCategory(Action):
             counter = counter + 1
         result = Service.productObjectToString(content)
         dispatcher.utter_message(result)
-        print(result)
-        return [AllSlotsReset(), SlotSet("saved_product", response.content)]
+        return [AllSlotsReset(), SlotSet("saved_product", json.dumps(content))]
+
+class ActionPushBookToCart(Action):
+    def name(self) -> Text:
+        return "action_push_book_to_cart"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]: 
+        
+        print("action", self.name())
+        try:
+            uid = int(tracker.current_state()['sender_id'])
+        except:
+            uid = 3
+        
+        print("uid",uid,tracker.current_state()['sender_id'])
+        choice_book = tracker.get_slot('choice_book')
+        quantity = tracker.get_slot('quantity')
+
+        saved_book = json.loads(tracker.get_slot('saved_product'))
+        book = {id:1}
+        for item in saved_book:
+            if item['index'] == int(choice_book):
+                book = item
+
+        data = {
+            'uid': uid,
+            'pid': book['id'],
+            'quantity': quantity
+        } 
+        print("data",data)
+        response = requests.post(url=f'{BOT_PUSH_CART_URL}', json=data)
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Whoops it wasn't a 200
+            print(e)
+            print(response)
+            dispatcher.utter_message('Đã có lỗi xảy ra')
+            return [AllSlotsReset()]
+
+        content = json.loads(response.content)
+        if content['status'] == 1:
+            dispatcher.utter_message("Sách đã được đưa vào giỏ hàng thành công")
+        else:
+            dispatcher.utter_message('Đã có lỗi xảy ra')
+        return [AllSlotsReset()]

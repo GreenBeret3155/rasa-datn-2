@@ -74,9 +74,9 @@ stories:
   - active_loop: book_name_form
   - active_loop: null
   - slot_was_set:
-    - requested_slot: null
+    - book_name: null
   - action: action_search
-
+  - checkpoint: done_show_book
 - story: tim_sach_theo_tacgia
   steps:
   - intent: search
@@ -95,9 +95,9 @@ stories:
   - active_loop: choose_author_form
   - active_loop: null
   - slot_was_set:
-    - requested_slot: null
+    - choice_author: null
   - action: action_search_book_by_author
-
+  - checkpoint: done_show_book
 - story: tim_sach_theo_theloai
   steps:
   - intent: search
@@ -116,6 +116,15 @@ stories:
   - active_loop: choose_category_form
   - active_loop: null
   - slot_was_set:
-    - requested_slot: null
+    - choice_category: null
   - action: action_search_book_by_category
-
+  - checkpoint: done_show_book
+- story: z_dua_sach_vao_gio
+  steps:
+  - checkpoint: done_show_book
+  - action: choose_book_form
+  - active_loop: choose_book_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: action_push_book_to_cart

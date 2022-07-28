@@ -46,12 +46,27 @@ slots:
     initial_value: null
     auto_fill: true
     influence_conversation: false
+  saved_product:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
   choice_author:
     type: rasa.shared.core.slots.TextSlot
     initial_value: null
     auto_fill: true
     influence_conversation: false
   choice_category:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
+  choice_book:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
+  quantity:
     type: rasa.shared.core.slots.TextSlot
     initial_value: null
     auto_fill: true
@@ -75,6 +90,7 @@ slots:
     - '1'
     - '2'
     - '3'
+    - '4'
   cust_sex:
     type: rasa.shared.core.slots.TextSlot
     initial_value: null
@@ -125,6 +141,10 @@ responses:
   - text: Nhập vào mã tác giả bạn muốn tìm sách
   utter_ask_choice_category:
   - text: Nhập vào mã thể loại sách bạn muốn tìm
+  utter_ask_choice_book:
+  - text: Bạn hãy nhập vào mã sách bạn muốn đưa vào giỏ hàng. Chọn 0 nếu bạn muốn bỏ qua.
+  utter_ask_quantity:
+  - text: 'Số lượng sách bạn muốn:'
 actions:
 - utter_greet
 - utter_bye
@@ -141,6 +161,7 @@ actions:
 - action_search_book_by_author
 - action_search_category
 - action_search_book_by_category
+- action_push_book_to_cart
 forms:
   book_name_form:
     required_slots:
@@ -165,5 +186,11 @@ forms:
   choose_category_form:
     required_slots:
       choice_category:
+      - type: from_text
+  choose_book_form:
+    required_slots:
+      choice_book:
+      - type: from_text
+      quantity:
       - type: from_text
 e2e_actions: []
