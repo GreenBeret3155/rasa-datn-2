@@ -21,6 +21,8 @@ intents:
     use_entities: true
 - search:
     use_entities: true
+- help:
+    use_entities: true
 entities:
 - cust_sex
 - cust_name
@@ -114,9 +116,12 @@ slots:
 responses:
   utter_greet:
   - text: Kính chào Quý khách!
+  - text: Chào mừng Quý khách ghé thăm cửa hàng sách ABC.
+  - text: Xin chào Quý khách đã đến với cửa hàng sách ABC.
   utter_bye:
   - text: Kính chào tạm biệt và mong sớm gặp lại quý khách!
   - text: Kính chào tạm biệt và chúc quý khách một ngày tốt lành!
+  - text: Xin tạm biệt quý khách!
   utter_thank:
   - text: Cảm ơn quý khách quá khen ah!
   - text: Dạ không có gì, đó là trách nhiệm của em mà!
@@ -127,6 +132,10 @@ responses:
   - text: Dạ thưa. Tên Tiếng Việt của em là Trợ lý ảo Ngân hàng nhưng em thích gọi bằng tên Tiếng Anh là Bank Bot cho nó Tây!
   utter_unclear:
   - text: 'Thưa quý khách, hiện tại tôi chưa hiểu được yêu cầu của Quý khách. '
+  utter_default:
+  - text: Thưa quý khách, hiện tại tôi chưa hiểu được yêu cầu của Quý khách. 
+  - text: Xin lỗi tôi chưa hiểu yêu cầu của quý khách.
+  - text: Xin mời quý khách nhập lại yêu cầu của mình. 
   utter_greet_with_name:
   - text: Kính chào {cust_sex} {cust_name}. ABC Shop có thể giúp gì được {cust_sex} {cust_name} ạ?
   utter_ask_search_type_choice:
@@ -145,6 +154,8 @@ responses:
   - text: Bạn hãy nhập vào mã sách bạn muốn đưa vào giỏ hàng. Chọn 0 nếu bạn muốn bỏ qua.
   utter_ask_quantity:
   - text: 'Số lượng sách bạn muốn:'
+  utter_help:
+  - text: Xin chào mừng bạn đã đến với chatbot ABC. Tôi sẽ cung cấp cho bạn các thông tin về cửa hàng. Nếu bạn muốn tìm kiếm thông tin về sách hãy gõ /search, tìm kiếm thông tin về đơn hàng của bạn hãy gõ /order,... Nếu cần trợ giúp về câu lệnh, hãy gõ /help. Xin cảm ơn bạn
 actions:
 - utter_greet
 - utter_bye

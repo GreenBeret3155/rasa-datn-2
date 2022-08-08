@@ -109,4 +109,18 @@ nlu:
     - Tên sách là [Tên sách là](cust_book_name)
 - intent: search
   examples: |
-    - /search
+    - Tôi muốn tìm kiếm sách
+    - Tìm kiếm sách
+    - Tôi cần tìm kiếm
+    - Tôi muốn tìm sách
+    - Tìm sách cho tôi
+- intent: help
+  examples: |
+    - Tôi không biết làm gì tiếp theo
+    - Không biết cần làm gì
+    - Làm gì tiếp theo đây
+    - Hãy trợ giúp tôi
+    - Giúp tôi
+    - Tôi cần trợ giúp
+    - Tôi cần giúp đỡ
+
