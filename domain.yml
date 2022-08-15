@@ -23,10 +23,25 @@ intents:
     use_entities: true
 - help:
     use_entities: true
+- praise:
+    use_entities: true
+- ask_work_time:
+    use_entities: true
+- decry:
+    use_entities: true
+- faq_branch_amount:
+    use_entities: true
+- faq_branch_address:
+    use_entities: true
+- faq_shop_time:
+    use_entities: true
+- order:
+    use_entities: true
 entities:
 - cust_sex
 - cust_name
 - cust_book_name
+- cust_order
 slots:
   book_name:
     type: rasa.shared.core.slots.TextSlot
@@ -92,7 +107,6 @@ slots:
     - '1'
     - '2'
     - '3'
-    - '4'
   cust_sex:
     type: rasa.shared.core.slots.TextSlot
     initial_value: null
@@ -108,12 +122,35 @@ slots:
     initial_value: null
     auto_fill: true
     influence_conversation: false
+  cust_order:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
   requested_slot:
     type: rasa.shared.core.slots.UnfeaturizedSlot
     initial_value: null
     auto_fill: true
     influence_conversation: false
 responses:
+  utter_ask_work_time:
+  - text: Dạ em làm việc toàn thời gian 24/7 ạ.
+  - text: Dạ 24/7 nha quý khách!
+  utter_praise:
+  - text: Dạ em cảm ơn quý khách.
+  - text: Chúc quý khách có trải nghiệm mua sách vui vẻ!
+  utter_decry:
+  - text: Bot đang trong quá trình nâng cấp mong quý khách thông cảm.
+  - text: Bot sẽ nâng cấp trong thời gian tới xin lỗi vì trải nghiệm của quý khách.
+  utter_faq_shop_time:
+  - text: Cửa hàng mở cửa từ 8h sáng đến 5h chiều thưa quý khách.
+  - text: Quý khách có thể đến cửa hàng mua sắm từ 8h sáng đến 5h chiều ạ.
+  utter_faq_branch_amount:
+  - text: Cửa hàng có ba chi nhánh tại Hà Nội, Đà Nẵng và TP.Hồ Chí Minh ạ.
+  - text: Quý khách có thể đến ba cửa hàng tại Hà Nội, Đà Nẵng và TP.Hồ Chí Minh ạ.
+  utter_faq_branch_address:
+  - text: 'Địa chỉ của cửa hàng tại Hà Nội: số 1 Trần Hữu Dực, quận Nam Từ Liêm; tại Đà Nẵng: số 03 Nguyễn Trãi, quận Liên Triểu; tại TP.Hồ Chí Minh: số 08 ngõ 13 đường Nguyễn Tuân quận 6. Rất mong được đón tiếp quý khách tại cửa hàng'
+  - text: 'Cửa hàng có 3 chi nhánh tại Hà Nội: số 1 Trần Hữu Dực, quận Nam Từ Liêm; tại Đà Nẵng: số 03 Nguyễn Trãi, quận Liên Triểu; tại TP.Hồ Chí Minh: số 08 ngõ 13 đường Nguyễn Tuân quận 6. Rất mong được đón tiếp quý khách tại cửa hàng'
   utter_greet:
   - text: Kính chào Quý khách!
   - text: Chào mừng Quý khách ghé thăm cửa hàng sách ABC.
@@ -125,33 +162,33 @@ responses:
   utter_thank:
   - text: Cảm ơn quý khách quá khen ah!
   - text: Dạ không có gì, đó là trách nhiệm của em mà!
-  utter_func_list:
+  utter_ask_func_list:
   - text: 'Em có thể làm được rất nhiều thứ: hát, đọc thơ, đọc chuyện...nhưng giờ em chỉ chat thôi!'
   utter_ask_name:
-  - text: Em họ Bank, tên Bot! Người ta hay gọi em là Bank Bot thông minh xinh đẹp giỏi giang nhất vũ trụ ạ! Quý khách cần trợ giúp gì ạ?
-  - text: Dạ thưa. Tên Tiếng Việt của em là Trợ lý ảo Ngân hàng nhưng em thích gọi bằng tên Tiếng Anh là Bank Bot cho nó Tây!
+  - text: Em là trợ lý của nhà sách ạ! Quý khách cần trợ giúp gì ạ?
+  - text: Dạ thưa. Tên Tiếng Việt của em là Trợ lý ảo nhà sách nhưng em thích gọi bằng tên Tiếng Anh là Book Bot cho nó Tây!
   utter_unclear:
   - text: 'Thưa quý khách, hiện tại tôi chưa hiểu được yêu cầu của Quý khách. '
   utter_default:
-  - text: Thưa quý khách, hiện tại tôi chưa hiểu được yêu cầu của Quý khách. 
+  - text: Thưa quý khách, hiện tại tôi chưa hiểu được yêu cầu của Quý khách.
   - text: Xin lỗi tôi chưa hiểu yêu cầu của quý khách.
-  - text: Xin mời quý khách nhập lại yêu cầu của mình. 
+  - text: Xin mời quý khách nhập lại yêu cầu của mình.
   utter_greet_with_name:
   - text: Kính chào {cust_sex} {cust_name}. ABC Shop có thể giúp gì được {cust_sex} {cust_name} ạ?
   utter_ask_search_type_choice:
-  - text: Bạn hãy chọn loại tìm kiếm
+  - text: 'Bạn hãy chọn loại tìm kiếm: 1 - Tìm kiếm theo tên sách; 2 - Tìm kiếm theo tên tác giả; 3 - Tìm kiếm theo tên danh mục;'
   utter_ask_book_name:
-  - text: Hãy điền tên sách bạn muốn tìm
+  - text: Hãy điền vào tên sách bạn muốn tìm kiếm
   utter_ask_book_author:
-  - text: Hãy chọn tác giả bạn muốn tìm sách
+  - text: Hãy điền vào tên tác giả bạn muốn tìm kiếm
   utter_ask_book_category:
-  - text: Hãy chọn category bạn muốn tìm sách
+  - text: Hãy điền vào tên danh mục bạn muốn tìm kiếm
   utter_ask_choice_author:
   - text: Nhập vào mã tác giả bạn muốn tìm sách
   utter_ask_choice_category:
-  - text: Nhập vào mã thể loại sách bạn muốn tìm
+  - text: Nhập vào mã danh mục sách bạn muốn tìm
   utter_ask_choice_book:
-  - text: Bạn hãy nhập vào mã sách bạn muốn đưa vào giỏ hàng. Chọn 0 nếu bạn muốn bỏ qua.
+  - text: Bạn hãy nhập vào mã sách bạn muốn đưa vào giỏ hàng.
   utter_ask_quantity:
   - text: 'Số lượng sách bạn muốn:'
   utter_help:
@@ -173,6 +210,7 @@ actions:
 - action_search_category
 - action_search_book_by_category
 - action_push_book_to_cart
+- action_answer_order
 forms:
   book_name_form:
     required_slots:

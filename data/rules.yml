@@ -4,3 +4,43 @@ rules:
   steps:
   - intent: help
   - action: utter_help
+- rule: tra_loi_thank
+  steps:
+  - intent: thank
+  - action: utter_thank
+- rule: tra_loi_ask_name
+  steps:
+  - intent: ask_name
+  - action: utter_ask_name
+- rule: tra_loi_ask_func_list
+  steps:
+  - intent: ask_func_list
+  - action: utter_ask_func_list
+- rule: tra_loi_ask_work_time
+  steps:
+  - intent: ask_work_time
+  - action: utter_ask_work_time
+- rule: tra_loi_praise
+  steps:
+  - intent: praise
+  - action: utter_praise
+- rule: tra_loi_decry
+  steps:
+  - intent: decry
+  - action: utter_decry
+- rule: tra_loi_faq_shop_time
+  steps:
+  - intent: faq_shop_time
+  - action: utter_faq_shop_time
+- rule: tra_loi_faq_branch_amount
+  steps:
+  - intent: faq_branch_amount
+  - action: utter_faq_branch_amount
+- rule: tra_loi_faq_branch_address
+  steps:
+  - intent: faq_branch_address
+  - action: utter_faq_branch_address
+- rule: tra_loi_order
+  steps:
+  - intent: order
+  - action: action_answer_order
