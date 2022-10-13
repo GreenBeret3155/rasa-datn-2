@@ -33,7 +33,7 @@ from unittest import result
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet, AllSlotsReset, FollowupAction
+from rasa_sdk.events import SlotSet, AllSlotsReset, FollowupAction, ActionExecuted
 import requests
 from dotenv import load_dotenv
 from pathlib import Path
@@ -42,6 +42,7 @@ dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 '''os.getenv() used to read varibles from .env file'''
 main_url=os.getenv("MAIN_URL")
+client_url=os.getenv("CLIENT_URL")
 search_path = os.getenv("SEARCH_PATH")
 search_by_author_path = os.getenv("SEARCH_BY_AUTHOR_PATH")
 search_by_category_path = os.getenv("SEARCH_BY_CATEGORY_PATH")
@@ -50,7 +51,7 @@ SEARCH_URL = f'{main_url}{search_path}'
 SEARCH_BY_AUTHOR_URL = f'{main_url}{search_by_author_path}'
 SEARCH_BY_CATEGORY_URL = f'{main_url}{search_by_category_path}'
 BOT_PUSH_CART_URL = f'{main_url}/bot-push-cart'
-
+BOT_GET_ORDER_DETAIL_URL = f'{main_url}/bot-order-detail/'
 
 class Service():
     def productObjectToString(p : List[Dict[Text, Any]]) -> Text:
@@ -93,6 +94,40 @@ class ActionAskBook(Action):
         dispatcher.utter_message("hello world")
         return []
 
+class ActionAnswerOrder(Action):
+    def name(self) -> Text:
+        return "action_answer_order"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        message = tracker.latest_message['intent'].get('name')
+        orderId = tracker.get_slot('cust_order')
+
+        response = requests.get(url=f'{BOT_GET_ORDER_DETAIL_URL}{orderId}')
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Whoops it wasn't a 200
+            dispatcher.utter_message('Đã có lỗi xảy ra trong quá trình tìm kiếm, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
+
+        content = json.loads(response.content)
+        if not content:
+            dispatcher.utter_message('Không có đơn hàng nào phù hợp, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
+        
+        order = content['order']
+        info = content['info']
+        orderValue = content['orderValue']
+        items = content['items']
+        result = f"Mã đơn hàng: {orderId}\nThông tin người nhận: \n  + Tên người nhận: {info['name']}\n  + Số điện thoại nhận hàng: {info['phone']}\n  + Địa chỉ nhận hàng: {info['address']}\nGiá trị đơn hàng: {orderValue} VND\nTrạng thái đơn hàng: {order['message']}\nSản phẩm: \n"
+        for item in items:
+            result = result + f"  + {item['name']} - Số lượng: {item['quantity']}\n"
+        dispatcher.utter_message(result)
+        return [AllSlotsReset()]
+
 class ActionSearch(Action):
     
     def name(self) -> Text:
@@ -110,11 +145,14 @@ class ActionSearch(Action):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
-            dispatcher.utter_message('Đã có lỗi xảy ra')
-            return [AllSlotsReset()]
+            dispatcher.utter_message('Đã có lỗi xảy ra trong quá trình tìm kiếm, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
 
         counter = 1
         content = json.loads(response.content)
+        if not content:
+            dispatcher.utter_message('Không có kết quả nào, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
 
         for item in content:
             item['index'] = counter
@@ -140,10 +178,13 @@ class ActionGetAuthor(Action):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
-            dispatcher.utter_message('Đã có lỗi xảy ra')
-            return [AllSlotsReset()]
+            dispatcher.utter_message('Đã có lỗi xảy ra trong quá trình tìm kiếm, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
 
         content = json.loads(response.content)
+        if not content:
+            dispatcher.utter_message('Không có kết quả nào, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
         listItem = []
         counter = 1
         for item in content:
@@ -177,12 +218,14 @@ class ActionGetBookByAuthor(Action):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
-            dispatcher.utter_message('Đã có lỗi xảy ra')
+            dispatcher.utter_message('Đã có lỗi xảy ra trong quá trình tìm kiếm, mời bạn hỏi tiếp')
             return [AllSlotsReset()]
 
         counter = 1
         content = json.loads(response.content)
-
+        if not content:
+            dispatcher.utter_message('Không có kết quả nào, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
         for item in content:
             item['index'] = counter
             counter = counter + 1
@@ -207,10 +250,14 @@ class ActionGetCategory(Action):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
-            dispatcher.utter_message('Đã có lỗi xảy ra')
+            dispatcher.utter_message('Đã có lỗi xảy ra trong quá trình tìm kiếm, mời bạn hỏi tiếp')
             return [AllSlotsReset()]
 
         content = json.loads(response.content)
+        if not content:
+            dispatcher.utter_message('Không có kết quả nào, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
+
         listItem = []
         counter = 1
         for item in content:
@@ -244,12 +291,14 @@ class ActionGetBookByCategory(Action):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
-            dispatcher.utter_message('Đã có lỗi xảy ra')
+            dispatcher.utter_message('Đã có lỗi xảy ra trong quá trình tìm kiếm, mời bạn hỏi tiếp')
             return [AllSlotsReset()]
 
         counter = 1
         content = json.loads(response.content)
-
+        if not content:
+            dispatcher.utter_message('Không có kết quả nào, mời bạn hỏi tiếp')
+            return [FollowupAction("action_restart")]
         for item in content:
             item['index'] = counter
             counter = counter + 1
@@ -292,14 +341,12 @@ class ActionPushBookToCart(Action):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             # Whoops it wasn't a 200
-            print(e)
-            print(response)
-            dispatcher.utter_message('Đã có lỗi xảy ra')
-            return [AllSlotsReset()]
+            dispatcher.utter_message('Đã có lỗi xảy ra trong quá trình tìm kiếm, mời bạn hỏi tiếp')
+            return [ActionExecuted("action_listen")]
 
         content = json.loads(response.content)
         if content['status'] == 1:
-            dispatcher.utter_message("Sách đã được đưa vào giỏ hàng thành công")
+            dispatcher.utter_message(f'Sách đã được đưa vào giỏ hàng thành công. Bạn có thể thực hiện đặt hàng ngay tại {client_url}/cart. Xin cảm ơn.')
         else:
-            dispatcher.utter_message('Đã có lỗi xảy ra')
+            dispatcher.utter_message('Đã có lỗi xảy ra, mời bạn hỏi tiếp')
         return [AllSlotsReset()]

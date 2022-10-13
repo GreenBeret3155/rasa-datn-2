@@ -1,5 +1,60 @@
 version: "2.0"
 nlu:
+- intent: ask_work_time
+  examples: |
+    - bạn làm việc khi nào
+    - làm việc đến mấy giờ
+    - mấy giờ bạn làm việc
+    - bạn có nghỉ không
+    - có nghỉ bao giờ không
+    - bắt đầu làm việc từ mấy giờ
+    - bạn làm việc từ mấy giờ
+- intent: praise
+  examples: |
+    - tốt lắm
+    - bot tốt đấy
+    - bạn tốt đấy
+    - bot giỏi lắm
+    - giỏi đấy
+    - bot hay đấy
+    - bot làm việc rất tốt
+    - bạn làm việc tốt
+- intent: decry
+  examples: |
+    - bot chán quá
+    - chán thật
+    - bot nói chán quá
+    - không trả lời được
+    - bot không trả lời
+    - trả lời không được
+    - trả lời chán quá
+- intent: faq_shop_time
+  examples: |
+    - cửa hàng mở cửa vào mấy giờ vậy
+    - giờ mở cửa
+    - giờ mở cửa của cửa hàng
+    - giờ đóng mở cửa
+    - cửa hàng hoạt động vào khung giờ nào
+    - cửa hàng hoạt động theo giờ nào
+    - hoạt động vào giờ nào
+- intent: faq_branch_amount
+  examples: |
+    - cửa hàng có bao nhiêu chi nhánh
+    - số chi nhánh của cửa hàng
+    - có bao nhiêu cửa hàng
+    - có mấy cửa hàng
+    - có bao nhiêu chi nhánh
+    - cửa hàng có mấy chi nhánh
+    - tổng số chi nhánh của cửa hàng
+- intent: faq_branch_address
+  examples: |
+    - cửa hàng địa chỉ ở đâu
+    - địa chỉ của cửa hàng
+    - cửa hàng nằm ở đâu
+    - cửa hàng có địa chỉ như thế nào
+    - địa chỉ các chi nhánh của cửa hàng
+    - địa chỉ các chi nhánh
+    - địa chỉ của các cửa hàng
 - intent: greet
   examples: |
     - xin chào
@@ -123,4 +178,10 @@ nlu:
     - Giúp tôi
     - Tôi cần trợ giúp
     - Tôi cần giúp đỡ
-
+- intent: order
+  examples: |
+    - Đơn hàng của tôi [100012](cust_order)
+    - Tôi muốn xem đơn hàng [100013](cust_order)
+    - Đơn hàng [100014](cust_order)
+    - Trạng thái đơn hàng [100015](cust_order)
+    - Thông tin đơn hàng [100016](cust_order)
